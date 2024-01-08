@@ -1,25 +1,120 @@
-def tri_selection(tab):
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-   for i in range(len(tab)):
+class LoginWidget extends StatefulWidget {
+  const LoginWidget({super.key});
 
-      # Trouver le min
-       min = i
+  @override
+  _LoginWidgetState createState() => _LoginWidgetState();
+}
 
-       for j in range(i+1, len(tab)):
-           if tab[min] > tab[j]:
-               min = j
-                
-       tmp = tab[i]
-       tab[i] = tab[min]
-       tab[min] = tmp
+class _LoginWidgetState extends State<LoginWidget> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-   return tab
+  Future<void> signInToFirebase(String mail, String password) async {
+    //FirebaseAuth auth = FirebaseAuth.instance;
 
-# Programme principale pour tester le code ci-dessus
-tab = [98, 22, 15, 32, 2, 74, 63, 70]
- 
-tri_selection(tab)
- 
-print ("Le tableau trié est:")
-for i in range(len(tab)):
-    print ("%d" %tab[i])
+    // Observer pour les changements d'état de l'authentification
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {});
+
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: mail,
+        password: password,
+      );
+
+      print('Connexion réussie : ${userCredential.user?.email}');
+    } on FirebaseAuthException catch (e) {
+      print("error :$e");
+      if (e.code == 'invalid-login-credentials') {
+        print('Aucun utilisateur trouvé pour cette adresse e-mail.');
+        //signUp(mail, password);
+      } else if (e.code == 'wrong-password') {
+        print('Mot de passe incorrect.');
+      } else {
+        print("Unexpected FirebaseAuthException: ${e.message}");
+      }
+    } catch (e) {
+      print("Unexpected error: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          controller: _usernameController,
+          decoration: const InputDecoration(
+            labelText: 'Username',
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _passwordController,
+          decoration: const InputDecoration(
+            labelText: 'Password',
+          ),
+          obscureText: true, // For password fields
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: () async {
+            String username = _usernameController.text;
+            String password = _passwordController.text;
+
+            print('Username: $username, Password: $password');
+
+            try {
+              await signInToFirebase(username, password);
+            } catch (e) {
+              print('Error during sign-in: $e');
+              if (e is FirebaseAuthException && e.code == 'user-not-found') {
+                try {
+                  print('User not found error');
+                } catch (e) {
+                  print('Error during sign-up: $e');
+                }
+              }
+            }
+          },
+          child: const Text('Se connecter'),
+        ),
+      ],
+    );
+  }
+}
+
+class LogoutWidget extends StatelessWidget {
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      print('User signed out');
+    } catch (e) {
+      print('Error during sign-out: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          onPressed: () async {
+            // Check if the user is currently authenticated
+            User? user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              await _signOut();
+            } else {
+              print('User is already signed out.');
+            }
+          },
+          child: const Text('Sign Out'),
+        ),
+      ],
+    );
+  }
+}
