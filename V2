@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginWidget extends StatefulWidget {
-  const LoginWidget({super.key});
+  const LoginWidget({Key? key}) : super(key: key);
 
   @override
   _LoginWidgetState createState() => _LoginWidgetState();
@@ -13,9 +13,6 @@ class _LoginWidgetState extends State<LoginWidget> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> signInToFirebase(String mail, String password) async {
-    //FirebaseAuth auth = FirebaseAuth.instance;
-
-    // Observer pour les changements d'état de l'authentification
     FirebaseAuth.instance.authStateChanges().listen((User? user) {});
 
     try {
@@ -28,11 +25,12 @@ class _LoginWidgetState extends State<LoginWidget> {
       print('Connexion réussie : ${userCredential.user?.email}');
     } on FirebaseAuthException catch (e) {
       print("error :$e");
-      if (e.code == 'invalid-login-credentials') {
+      if (e.code == 'user-not-found') {
         print('Aucun utilisateur trouvé pour cette adresse e-mail.');
-        //signUp(mail, password);
+        // Handle user not found (possibly sign up)
       } else if (e.code == 'wrong-password') {
         print('Mot de passe incorrect.');
+        // Handle wrong password
       } else {
         print("Unexpected FirebaseAuthException: ${e.message}");
       }
@@ -57,7 +55,7 @@ class _LoginWidgetState extends State<LoginWidget> {
           decoration: const InputDecoration(
             labelText: 'Password',
           ),
-          obscureText: true, // For password fields
+          obscureText: true,
         ),
         const SizedBox(height: 16),
         ElevatedButton(
@@ -71,13 +69,6 @@ class _LoginWidgetState extends State<LoginWidget> {
               await signInToFirebase(username, password);
             } catch (e) {
               print('Error during sign-in: $e');
-              if (e is FirebaseAuthException && e.code == 'user-not-found') {
-                try {
-                  print('User not found error');
-                } catch (e) {
-                  print('Error during sign-up: $e');
-                }
-              }
             }
           },
           child: const Text('Se connecter'),
@@ -104,7 +95,6 @@ class LogoutWidget extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () async {
-            // Check if the user is currently authenticated
             User? user = FirebaseAuth.instance.currentUser;
             if (user != null) {
               await _signOut();
