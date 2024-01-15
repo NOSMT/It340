@@ -21,3 +21,5 @@ test('Mot de passe correct', () => {
   test('Mot de passe incorrect pas de digit', () => {
     expect(validatePassword(password_2,rules)).toBe(false);
   });
+
+//Ecrire reste des tests..
