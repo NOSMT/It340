@@ -5,6 +5,11 @@ function insertPatient(patient) {
   console.log('Patient added to database:', database.patient);
 }
 
+function newinsertPatient(patient) {
+  database.patientList.push(patient);
+  console.log('Patient new added to database:', database.patient);
+}
+
 function retrievePatientList() {
   return database.patient.map(patient => ({
     id: patient.id,
@@ -12,7 +17,13 @@ function retrievePatientList() {
     firstName: patient.firstName,
   }));
 }
-
+function newretrievePatientList() {
+  return database.patientList.map(patientList => ({
+    id: patientList.id,
+    lastName: patientList.lastName,
+    firstName: patientList.firstName,
+  }));
+}
 function retrievePatient(id) {
   const patient = database.patient.find(patient => patient.id === id);
 
@@ -38,4 +49,4 @@ function updatePatient(updatedPatient) {
   }
 }
 
-module.exports = { insertPatient, retrievePatientList, retrievePatient, updatePatient };
+module.exports = { insertPatient, retrievePatientList, retrievePatient, updatePatient,newinsertPatient,newretrievePatientList };
